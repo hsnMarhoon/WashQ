@@ -254,3 +254,35 @@ export function DataTable({ columns, rows, rowKey = 'id', empty, onRowClick, cla
         </div>
     )
 }
+
+export function Input({ className = '', ...rest }) {
+    return <input className={`input ${className}`} {...rest} />
+}
+
+export function Checkbox({ checked, onChange, label, hint, disabled }) {
+    const id = useId()
+    return (
+        <div className={`check${disabled ? ' is-disabled' : ''}`}>
+        <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange?.(e.target.checked)} disabled={disabled} />
+        <label htmlFor={id}>
+            <span>{label}</span>
+            {hint && <span className="check-hint">{hint}</span>}
+        </label>
+        </div>
+    )
+}
+
+export function Field({ label, required, hint, error, children, className = '', id }) {
+    return (
+        <div className={`field ${className}`}>
+        {label && (
+            <label className="field-label" htmlFor={id}>
+            {label}
+            {required && <span className="req" aria-hidden="true"> *</span>}
+            </label>
+        )}
+        {children}
+        {error ? <p className="field-error" role="alert">{error}</p> : hint ? <p className="field-hint">{hint}</p> : null}
+        </div>
+    )
+}
