@@ -13,6 +13,12 @@ import { CheckIn } from './pages/student/CheckIn.jsx'
 import { ReportProblem } from './pages/student/ReportProblem.jsx'
 import { History } from './pages/student/History.jsx'
 import { NotificationSettings } from './pages/student/Settings.jsx'
+import { AdminBuildings } from './pages/admin/AdminBuildings.jsx'
+import { AdminMachines } from './pages/admin/AdminMachines.jsx'
+import { AdminUsers } from './pages/admin/AdminUsers.jsx'
+import { AdminRules } from './pages/admin/AdminRules.jsx'
+import { AdminStats } from './pages/admin/AdminStats.jsx'
+import { AdminReports } from './pages/admin/AdminReports.jsx'
 import { Button } from './components/ui.jsx'
 import { Logo } from './components/Icons.jsx'
 
@@ -73,6 +79,7 @@ export function App() {
           <Route path="announcements" element={<Announcements />} />
           <Route path="inventory" element={<Inventory />} />
         </Route>
+        */}
 
         <Route path="/admin" element={<RequireRole role="admin"><AppLayout /></RequireRole>}>
           <Route index element={<Navigate to="buildings" replace />} />
@@ -82,9 +89,7 @@ export function App() {
           <Route path="rules" element={<AdminRules />} />
           <Route path="stats" element={<AdminStats />} />
           <Route path="reports" element={<AdminReports />} />
-        
         </Route>
-        */}
 
         <Route path="*" element={<NotFound />} />
       </Routes>
