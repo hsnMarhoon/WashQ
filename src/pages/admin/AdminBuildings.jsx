@@ -1,112 +1,52 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../store/AppStore.jsx'
 import { Icon } from '../../components/Icons.jsx'
-import { Banner, Button, Card, DataTable, Field, Input, Modal, Select } from '../../components/ui.jsx'
-import { CLOSE_HOURS, OPEN_HOURS, hourLabel, hoursLabel } from './helpers.js'
-
-const EMPTY_FORM = { id: '', name: '', location: '', opens: '06:00', closes: '24:00' }
+import {
+  Badge, Banner, Button, Card, ConfirmDialog, DataTable, EmptyState, Field, Input, InlineError, Modal, Select,
+} from '../../components/ui.jsx'
 
 export function AdminBuildings() {
   const { state, addBuilding, updateBuilding, removeBuilding, toast } = useApp()
-  const [form, setForm] = useState(EMPTY_FORM)
-  const [editingId, setEditingId] = useState(null) // null = adding a new building
-  const [errors, setErrors] = useState({})
-  const [blocked, setBlocked] = useState(null) // details for the "can't remove" dialog
+  const navigate = useNavigate()
+  const [addOpen, setAddOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const [removing, setRemoving] = useState(null)
+  const [removeError, setRemoveError] = useState(null)
 
-  const setField = (key, value) => setForm((f) => ({ ...f, [key]: value }))
+  const buildings = [...state.buildings].sort((a, b) => a.id.localeCompare(b.id))
 
-  const resetForm = () => {
-    setForm(EMPTY_FORM)
-    setEditingId(null)
-    setErrors({})
-  }
-
-  const startEdit = (building) => {
-    setEditingId(building.id)
-    setForm({
-      id: building.id,
-      name: building.name,
-      location: building.location,
-      opens: building.opens,
-      closes: building.closes,
-    })
-    setErrors({})
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-
-    if (editingId) {
-      // updateBuilding does not validate, so the same checks are done here.
-      const found = {}
-      if (!form.name.trim()) found.name = 'Display name is required.'
-      if (form.opens >= form.closes) found.closes = 'Opening time must be before closing time.'
-      if (Object.keys(found).length) {
-        setErrors(found)
-        return
-      }
-      updateBuilding(editingId, {
-        name: form.name.trim(),
-        location: form.location.trim(),
-        opens: form.opens,
-        closes: form.closes,
-      })
-      toast(`Building ${editingId} updated.`)
-      resetForm()
-      return
-    }
-
-    const res = addBuilding(form)
-    if (!res.ok) {
-      setErrors(res.errors)
-      return
-    }
-    toast(`${res.building.name} added. It now appears in the sign-up list.`)
-    resetForm()
-  }
-
-  const handleRemove = (building) => {
-    const res = removeBuilding(building.id)
-    if (!res.ok) {
-      setBlocked({ building, machines: res.machines, bookings: res.bookings })
-      return
-    }
-    if (editingId === building.id) resetForm()
-    toast(`${building.name} removed.`, 'info')
-  }
+  const machinesFor = (id) => state.machines.filter((m) => m.buildingId === id)
+  const staffFor = (b) => state.users.filter((u) => u.role === 'staff' && (u.buildingIds || []).includes(b.id))
+  const studentsFor = (id) => state.users.filter((u) => u.role === 'student' && u.buildingId === id)
 
   const columns = [
     {
-      key: 'name',
+      key: 'building',
       label: 'Building',
       render: (b) => (
-        <span className="building-cell">
-          <span className="building-icon"><Icon name="building" size={18} /></span>
+        <div className="building-cell">
+          <span className="building-icon"><Icon name="building" size={20} /></span>
           <div>
             <strong>{b.name}</strong>
-            <span className="muted small">No. {b.id}</span>
+            <span className="small muted">No. {b.id} · {b.location || 'No location set'}</span>
           </div>
-        </span>
+        </div>
       ),
     },
-    { key: 'location', label: 'Laundry room', render: (b) => b.location || <span className="muted">—</span> },
-    { key: 'hours', label: 'Hours', render: (b) => hoursLabel(b) },
-    {
-      key: 'machines',
-      label: 'Machines',
-      align: 'center',
-      render: (b) => state.machines.filter((m) => m.buildingId === b.id).length,
-    },
-    { key: 'staff', label: 'Staff', align: 'center', render: (b) => b.staffIds.length },
+    { key: 'machines', label: 'Machines', render: (b) => `${machinesFor(b.id).length} (${machinesFor(b.id).filter((m) => m.status === 'out-of-order' || m.status === 'maintenance').length} out)` },
+    { key: 'staff', label: 'Staff', render: (b) => (staffFor(b).length ? staffFor(b).map((s) => s.name).join(', ') : <Badge tone="red">Uncovered</Badge>) },
+    { key: 'students', label: 'Residents', render: (b) => studentsFor(b.id).length },
+    { key: 'hours', label: 'Hours', render: (b) => `${b.opens}–${b.closes}` },
     {
       key: 'actions',
       label: '',
       align: 'right',
       render: (b) => (
-        <span className="row-actions">
-          <Button variant="ghost" size="sm" icon="edit" onClick={() => startEdit(b)}>Edit</Button>
-          <Button variant="ghost" size="sm" icon="trash" onClick={() => handleRemove(b)}>Remove</Button>
-        </span>
+        <div className="row-actions">
+          <Button size="sm" variant="secondary" onClick={() => setEditing(b)}>Edit</Button>
+          <Button size="sm" variant="ghost" onClick={() => { setRemoving(b); setRemoveError(null) }}>Remove</Button>
+        </div>
       ),
     },
   ]
@@ -116,84 +56,180 @@ export function AdminBuildings() {
       <header className="page-head">
         <div>
           <h1 className="page-title">Buildings</h1>
-          <p className="page-sub">Every dormitory building with a laundry room, its opening hours and how many machines and staff it has.</p>
+          <p className="page-sub">Dormitory laundry rooms, their opening hours and the staff assigned to them.</p>
+        </div>
+        <div className="page-actions">
+          <Button icon="plus" onClick={() => setAddOpen(true)}>Add building</Button>
         </div>
       </header>
 
-      <div className="two-col">
-        <Card title="All buildings" subtitle={`${state.buildings.length} buildings`} bodyClass="no-pad">
-          <DataTable columns={columns} rows={state.buildings} />
-          <p className="table-note">
-            <Icon name="info" size={14} /> New buildings appear in the student sign-up list immediately.
-          </p>
-        </Card>
+      <div className="kpi-grid">
+        <div className="kpi kpi-teal"><span className="kpi-icon"><Icon name="building" size={20} /></span><span className="kpi-body"><span className="kpi-label">Buildings</span><span className="kpi-value">{state.buildings.length}</span><span className="kpi-hint">Laundry rooms</span></span></div>
+        <div className="kpi kpi-blue"><span className="kpi-icon"><Icon name="washer" size={20} /></span><span className="kpi-body"><span className="kpi-label">Machines</span><span className="kpi-value">{state.machines.length}</span><span className="kpi-hint">{state.machines.filter((m) => m.status === 'out-of-order').length} out of order</span></span></div>
+        <div className="kpi kpi-purple"><span className="kpi-icon"><Icon name="users" size={20} /></span><span className="kpi-body"><span className="kpi-label">Residents</span><span className="kpi-value">{state.users.filter((u) => u.role === 'student').length}</span><span className="kpi-hint">Across all buildings</span></span></div>
+        <div className="kpi kpi-amber"><span className="kpi-icon"><Icon name="user" size={20} /></span><span className="kpi-body"><span className="kpi-label">Staff</span><span className="kpi-value">{state.users.filter((u) => u.role === 'staff').length}</span><span className="kpi-hint">Assigned to buildings</span></span></div>
+      </div>
 
-        <Card
-          title={editingId ? `Edit Building ${editingId}` : 'Add building'}
-          subtitle={editingId ? 'The building number cannot be changed.' : 'Register a new building and its laundry room.'}
-        >
-          <form className="stack" onSubmit={handleSubmit} noValidate>
-            <Field label="Building number" required error={errors.id} id="b-id">
-              <Input
-                id="b-id"
-                value={form.id}
-                onChange={(e) => setField('id', e.target.value)}
-                placeholder="e.g. 820"
-                inputMode="numeric"
-                disabled={!!editingId}
-              />
-            </Field>
-            <Field label="Display name" required error={errors.name} id="b-name">
-              <Input
-                id="b-name"
-                value={form.name}
-                onChange={(e) => setField('name', e.target.value)}
-                placeholder="e.g. Building 820"
-              />
-            </Field>
-            <Field label="Laundry room location" id="b-location">
-              <Input
-                id="b-location"
-                value={form.location}
-                onChange={(e) => setField('location', e.target.value)}
-                placeholder="e.g. Ground floor, west wing"
-              />
-            </Field>
-            <div className="form-grid">
-              <Field label="Opens" error={errors.hours} id="b-opens">
-                <Select id="b-opens" value={form.opens} onChange={(e) => setField('opens', e.target.value)}>
-                  {OPEN_HOURS.map((h) => <option key={h} value={h}>{hourLabel(h)}</option>)}
-                </Select>
-              </Field>
-              <Field label="Closes" error={errors.closes} id="b-closes">
-                <Select id="b-closes" value={form.closes} onChange={(e) => setField('closes', e.target.value)}>
-                  {CLOSE_HOURS.map((h) => <option key={h} value={h}>{hourLabel(h)}</option>)}
-                </Select>
-              </Field>
-            </div>
-            <div className="form-actions">
-              <Button type="submit" icon={editingId ? 'check' : 'plus'}>
-                {editingId ? 'Save changes' : 'Save building'}
-              </Button>
-              {editingId && <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>}
-            </div>
-          </form>
+      <Card title="All buildings" subtitle="Removing a building is blocked while it still has machines or upcoming bookings." bodyClass="no-pad">
+        <DataTable
+          columns={columns}
+          rows={buildings}
+          empty={<EmptyState icon="building" title="No buildings">Add the first laundry room.</EmptyState>}
+        />
+      </Card>
+
+      <div className="inline-cards">
+        <Card title="Room hours" subtitle="Students can only book slots inside these hours.">
+          <div className="mini-table">
+            {buildings.map((b) => (
+              <div key={b.id} className="mini-row"><strong>{b.name}</strong><span>{b.opens}–{b.closes}</span></div>
+            ))}
+          </div>
+        </Card>
+        <Card title="Staff coverage" subtitle="Every building must keep at least one staff member.">
+          <ul className="coverage-list">
+            {buildings.map((b) => {
+              const staff = staffFor(b)
+              return (
+                <li key={b.id}>
+                  <span>{b.name}</span>
+                  {staff.length ? <span className="muted small">{staff.map((s) => s.name).join(', ')}</span> : <Badge tone="red">No staff</Badge>}
+                </li>
+              )
+            })}
+          </ul>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/admin/users')}>Assign staff</Button>
         </Card>
       </div>
 
-      <Modal
-        open={!!blocked}
-        onClose={() => setBlocked(null)}
-        title={`Can't remove ${blocked?.building.name}`}
-        size="sm"
-        footer={<Button onClick={() => setBlocked(null)}>OK</Button>}
+      <BuildingFormModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSave={(payload) => {
+          const res = addBuilding(payload)
+          if (res.ok) {
+            toast(`${res.building.name} added.`)
+            setAddOpen(false)
+          }
+          return res
+        }}
+        title="Add building"
+        submitLabel="Add building"
+      />
+
+      {editing && (
+        <BuildingFormModal
+          open
+          initial={editing}
+          onClose={() => setEditing(null)}
+          onSave={(payload) => {
+            if (!payload.name.trim()) return { ok: false, errors: { name: 'Display name is required.' } }
+            if (payload.opens >= payload.closes && payload.closes !== '24:00') {
+              return { ok: false, errors: { closes: 'Opening time must be before closing time.' } }
+            }
+            updateBuilding(editing.id, {
+              name: payload.name.trim(),
+              location: payload.location.trim(),
+              opens: payload.opens,
+              closes: payload.closes,
+            })
+            toast(`${payload.name} updated.`)
+            setEditing(null)
+            return { ok: true }
+          }}
+          title={`Edit Building ${editing.id}`}
+          submitLabel="Save changes"
+          lockNumber
+        />
+      )}
+
+      <ConfirmDialog
+        open={!!removing}
+        onClose={() => { setRemoving(null); setRemoveError(null) }}
+        title={`Remove Building ${removing?.id}?`}
+        confirmLabel="Remove building"
+        tone="danger"
+        body={removing ? `${removing.name} will be removed permanently. This cannot be undone.` : ''}
+        onConfirm={() => {
+          const res = removeBuilding(removing.id)
+          if (!res.ok) {
+            setRemoveError(`This building still has ${res.machines} machine${res.machines === 1 ? '' : 's'} and ${res.bookings} upcoming booking${res.bookings === 1 ? '' : 's'}. Move or retire them first.`)
+            return
+          }
+          toast(`${removing.name} removed.`)
+          setRemoving(null)
+        }}
       >
-        {blocked && (
-          <Banner tone="warn" title={`This building still has ${blocked.machines} machines and ${blocked.bookings} upcoming bookings.`}>
-            Retire its machines first on the Machines page. Buildings with machines or active bookings cannot be removed.
-          </Banner>
-        )}
-      </Modal>
+        {removeError && <InlineError>{removeError}</InlineError>}
+      </ConfirmDialog>
     </div>
+  )
+}
+
+function BuildingFormModal({ open, onClose, onSave, initial = null, title, submitLabel, lockNumber = false }) {
+  const [id, setId] = useState(initial?.id || '')
+  const [name, setName] = useState(initial?.name || '')
+  const [location, setLocation] = useState(initial?.location || '')
+  const [opens, setOpens] = useState(initial?.opens || '06:00')
+  const [closes, setCloses] = useState(initial?.closes || '24:00')
+  const [errors, setErrors] = useState({})
+
+  const submit = () => {
+    const next = {}
+    if (!/^\d{3,4}$/.test(id.trim())) next.id = 'Building number must be 3–4 digits.'
+    if (!name.trim()) next.name = 'Display name is required.'
+    if (opens >= closes && closes !== '24:00') next.closes = 'Opening time must be before closing time.'
+    if (Object.keys(next).length) { setErrors(next); return }
+    const res = onSave({ id: id.trim(), name, location, opens, closes })
+    if (!res.ok) setErrors(res.errors || {})
+    else setErrors({})
+  }
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={title}
+      subtitle="Students see this name and these opening hours when they book."
+      size="md"
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button icon="check" onClick={submit}>{submitLabel}</Button>
+        </>
+      }
+    >
+      <div className="stack">
+        <div className="form-grid">
+          <Field label="Building number" required error={errors.id} hint="3–4 digits, unique.">
+            <Input value={id} onChange={(e) => { setId(e.target.value); setErrors((x) => ({ ...x, id: '' })) }} placeholder="812" disabled={lockNumber} inputMode="numeric" maxLength={4} />
+          </Field>
+          <Field label="Display name" required error={errors.name}>
+            <Input value={name} onChange={(e) => { setName(e.target.value); setErrors((x) => ({ ...x, name: '' })) }} placeholder="Building 812" maxLength={50} />
+          </Field>
+        </div>
+        <Field label="Location" hint="Where the laundry room is inside the building.">
+          <Input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Ground floor, east wing" maxLength={80} />
+        </Field>
+        <div className="form-grid">
+          <Field label="Room opens" required>
+            <Input type="time" value={opens === '24:00' ? '00:00' : opens} onChange={(e) => setOpens(e.target.value)} />
+          </Field>
+          <Field label="Room closes" required error={errors.closes}>
+            <Select value={closes} onChange={(e) => { setCloses(e.target.value); setErrors((x) => ({ ...x, closes: '' })) }}>
+              {Array.from({ length: 24 }).map((_, i) => {
+                const v = `${String(i + 1).padStart(2, '0')}:00`
+                return <option key={v} value={v}>{v}</option>
+              })}
+              <option value="24:00">24:00 (midnight)</option>
+            </Select>
+          </Field>
+        </div>
+        <Banner tone="info" icon="info">
+          Opening hours apply to new bookings. Existing bookings keep the rules they were made under.
+        </Banner>
+        <InlineError>{errors.form}</InlineError>
+      </div>
+    </Modal>
   )
 }
