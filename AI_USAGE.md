@@ -8,6 +8,7 @@ This file lists the AI tools used in the code phases of the project, as required
 |-----|--------|--------------|---------|----------------|
 | C01 | Mohamed Bukannan | Claude (Fable 5.2) | Drafting the administrator pages against the existing store and shared components; drafting the README, work division and project setup files | `src/pages/admin/*`, `index.html`, `package.json`, `package-lock.json`, `.gitignore`, `public/favicon.svg`, `README.md`, `WORK-DIVISION.md`, `AI_USAGE.md` |
 
+<<<<<<< HEAD
 | C02 | Mazen Hadi R Mdkhali | DeepSeek V4.1 Flash (OpenCode) | Designing the shared application state model and demo seed data; drafting the store provider, its actions and the periodic tick that advances machine cycles, no-shows, claims and announcements | `src/store/AppStore.jsx`, `src/data/seed.js` |
 | C03 | Mazen Hadi R Mdkhali | DeepSeek V4.1 Flash (OpenCode) | Writing slot-availability logic (opening hours, cycle length, existing bookings, maintenance and announcement blocks) and the shared date, countdown and formatting helpers | `src/lib/slots.js`, `src/lib/time.js` |
 | C04 | Mazen Hadi R Mdkhali | DeepSeek V4.1 Flash (OpenCode) | Implementing the booking/reschedule modal (day switch, taken slots with reasons, inline "slot just taken" error) and the cancel/reschedule flow on My Bookings | `src/components/BookingModal.jsx`, `src/pages/student/MyBookings.jsx` |
@@ -16,6 +17,11 @@ This file lists the AI tools used in the code phases of the project, as required
 | C07 | Mazen Hadi R Mdkhali | DeepSeek V4.1 Flash (OpenCode) | Debugging frozen countdowns and time-based states, and adding the Demo shortcuts used to reach cycle-finished, expired claim, expired check-in and slot-conflict states | `src/store/AppStore.jsx`, `src/hooks/useNow.js`, `src/pages/student/MyBookings.jsx` |
 
 <!-- Hassan, Usman: add one row per AI conversation (C08, C09, ...), or add your name to the line below if you used no AI in this phase. -->
+=======
+| C02 | Usman Mir | OpenAI Codex (GPT-6) | Implementing the staff workspace and integration fixes against the wireframes | `src/components/MaintenanceModal.jsx`, `src/pages/staff/*`, `src/App.jsx`, `src/store/AppStore.jsx`, `AI_USAGE.md` |
+
+<!-- Mazen, Hassan, Usman: add one row per AI conversation (C02, C03, ...), or add your name to the line below if you used no AI in this phase. -->
+>>>>>>> 1653253 (Connect staff workflows to shared state)
 
 No AI used: _to be completed by each member before submission._
 

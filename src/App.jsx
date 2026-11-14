@@ -19,6 +19,12 @@ import { AdminUsers } from './pages/admin/AdminUsers.jsx'
 import { AdminRules } from './pages/admin/AdminRules.jsx'
 import { AdminStats } from './pages/admin/AdminStats.jsx'
 import { AdminReports } from './pages/admin/AdminReports.jsx'
+import { StaffOverview } from './pages/staff/StaffOverview.jsx'
+import { FaultReports } from './pages/staff/FaultReports.jsx'
+import { StaffMachines } from './pages/staff/StaffMachines.jsx'
+import { LiveRoom } from './pages/staff/LiveRoom.jsx'
+import { Announcements } from './pages/staff/Announcements.jsx'
+import { Inventory } from './pages/staff/Inventory.jsx'
 import { Button } from './components/ui.jsx'
 import { Logo } from './components/Icons.jsx'
 
@@ -69,7 +75,6 @@ export function App() {
           <Route path="history" element={<History />} />
           <Route path="settings" element={<NotificationSettings />} /> 
         </Route>
-        {/*
         <Route path="/staff" element={<RequireRole role="staff"><AppLayout /></RequireRole>}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<StaffOverview />} />
@@ -79,7 +84,6 @@ export function App() {
           <Route path="announcements" element={<Announcements />} />
           <Route path="inventory" element={<Inventory />} />
         </Route>
-        */}
 
         <Route path="/admin" element={<RequireRole role="admin"><AppLayout /></RequireRole>}>
           <Route index element={<Navigate to="buildings" replace />} />
