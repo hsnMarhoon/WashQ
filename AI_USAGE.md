@@ -31,7 +31,7 @@ No AI used: _to be completed by each member before submission._
 
 ---
 
-## Member A — conversation summaries
+## Mazen Hadi R Mdkhali — conversation summaries
 
 Summaries of the conversations listed as C02–C07 above. Each entry records what was
 asked, what the assistant produced, and how the result was checked against the wireframes
