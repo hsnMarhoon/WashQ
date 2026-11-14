@@ -8,6 +8,11 @@ import { SignUp } from './pages/auth/SignUp.jsx'
 import { ResetPassword } from './pages/auth/ResetPassword.jsx'
 import { MachineBoard } from './pages/student/MachineBoard.jsx'
 import { MyBookings } from './pages/student/MyBookings.jsx'
+import { QueuePage } from './pages/student/QueuePage.jsx'
+import { CheckIn } from './pages/student/CheckIn.jsx'
+import { ReportProblem } from './pages/student/ReportProblem.jsx'
+import { History } from './pages/student/History.jsx'
+import { NotificationSettings } from './pages/student/Settings.jsx'
 import { Button } from './components/ui.jsx'
 import { Logo } from './components/Icons.jsx'
 
@@ -31,7 +36,7 @@ function NotFound() {
   return (
     <div className="notfound">
       <Logo size={48} />
-      <h1>Page not found</h1>
+      <h1>Page not found - 404</h1>
       <p>The page you followed does not exist in this prototype.</p>
       <Button as="a" href={user ? ROLE_HOME[user.role] : '/signin'}>Go to WashQ</Button>
     </div>
@@ -52,15 +57,13 @@ export function App() {
           <Route index element={<Navigate to="board" replace />} />
           <Route path="board" element={<MachineBoard />} />
           <Route path="bookings" element={<MyBookings />} />
-          {/* 
           <Route path="queue" element={<QueuePage />} />
           <Route path="checkin" element={<CheckIn />} />
           <Route path="report" element={<ReportProblem />} />
           <Route path="history" element={<History />} />
           <Route path="settings" element={<NotificationSettings />} /> 
-          
         </Route>
-
+        {/*
         <Route path="/staff" element={<RequireRole role="staff"><AppLayout /></RequireRole>}>
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<StaffOverview />} />
@@ -79,8 +82,9 @@ export function App() {
           <Route path="rules" element={<AdminRules />} />
           <Route path="stats" element={<AdminStats />} />
           <Route path="reports" element={<AdminReports />} />
-        */}
+        
         </Route>
+        */}
 
         <Route path="*" element={<NotFound />} />
       </Routes>

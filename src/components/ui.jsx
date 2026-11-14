@@ -198,6 +198,14 @@ export function ProgressRing({ value, size = 40, stroke = 4, tone = 'teal', chil
     )
 }
 
+export function ProgressBar({ value, tone = 'teal', label }) {
+    return (
+        <div className="progress" aria-label={label} role="img" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
+        <span className={`progress-fill progress-${tone}`} style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+        </div>
+    )
+}
+
 export function Segmented({ options, value, onChange, ariaLabel = 'Filter' }) {
     return (
         <div className="seg" role="group" aria-label={ariaLabel}>
@@ -299,6 +307,10 @@ export function Input({ className = '', ...rest }) {
     return <input className={`input ${className}`} {...rest} />
 }
 
+export function Textarea({ className = '', ...rest }) {
+    return <textarea className={`input textarea ${className}`} {...rest} />
+}
+
 export function Checkbox({ checked, onChange, label, hint, disabled }) {
     const id = useId()
     return (
@@ -308,6 +320,26 @@ export function Checkbox({ checked, onChange, label, hint, disabled }) {
             <span>{label}</span>
             {hint && <span className="check-hint">{hint}</span>}
         </label>
+        </div>
+    )
+}
+
+export function Toggle({ checked, onChange, label, disabled }) {
+    const id = useId()
+    return (
+        <div className={`toggle-row${disabled ? ' is-disabled' : ''}`}>
+        <span className="toggle-label" id={`${id}-label`}>{label}</span>
+        <button
+            type="button"
+            role="switch"
+            aria-checked={checked}
+            aria-labelledby={`${id}-label`}
+            className={`toggle${checked ? ' on' : ''}`}
+            onClick={() => !disabled && onChange?.(!checked)}
+            disabled={disabled}
+        >
+            <span className="toggle-thumb" />
+        </button>
         </div>
     )
 }
@@ -355,5 +387,20 @@ export function Tabs({ tabs, value, onChange, className = '' }) {
             </button>
         ))}
         </div>
+    )
+}
+
+export function Kpi({ icon, label, value, hint, tone = 'teal', onClick }) {
+    const Tag = onClick ? 'button' : 'div'
+    return (
+        <Tag type={onClick ? 'button' : undefined} className={`kpi kpi-${tone}${onClick ? ' kpi-click' : ''}`} onClick={onClick}>
+        <span className="kpi-icon"><Icon name={icon} size={20} /></span>
+        <span className="kpi-body">
+            <span className="kpi-label">{label}</span>
+            <span className="kpi-value">{value}</span>
+            {hint && <span className="kpi-hint">{hint}</span>}
+        </span>
+        {onClick && <Icon name="chevron-right" size={16} className="kpi-chev" />}
+        </Tag>
     )
 }
