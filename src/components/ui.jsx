@@ -4,6 +4,46 @@ import { Icon } from './Icons.jsx'
 import { useNow } from '../hooks/useNow.js'
 import { mmss } from '../lib/time.js'
 
+const STATUS_LABELS = {
+    'in-use': 'In use',
+    'out-of-order': 'Out of order',
+    'checked-in': 'Checked in',
+    'no-show': 'No-show',
+    'in-repair': 'In repair',
+}
+
+const STATUS_TONES = {
+    available: 'green',
+    'in-use': 'blue',
+    reserved: 'amber',
+    'out-of-order': 'red',
+    maintenance: 'amber',
+    finished: 'purple',
+    upcoming: 'amber',
+    'checked-in': 'blue',
+    completed: 'green',
+    cancelled: 'gray',
+    'no-show': 'red',
+    open: 'amber',
+    confirmed: 'blue',
+    'in-repair': 'purple',
+    resolved: 'green',
+    dismissed: 'gray',
+    live: 'green',
+    scheduled: 'amber',
+    expired: 'gray',
+    active: 'green',
+    suspended: 'red',
+    disabled: 'gray',
+    invited: 'amber',
+    pending: 'amber',
+}
+
+const TONES = {
+    green: 'green', teal: 'teal', blue: 'blue', amber: 'amber', red: 'red',
+    purple: 'purple', gray: 'gray', dark: 'dark',
+}
+
 export function Banner({ tone = 'info', title, icon, children, action, onClose, className = '' }) {
     return (
         <div className={`banner banner-${tone} ${className}`} role="status">
@@ -283,6 +323,37 @@ export function Field({ label, required, hint, error, children, className = '', 
         )}
         {children}
         {error ? <p className="field-error" role="alert">{error}</p> : hint ? <p className="field-hint">{hint}</p> : null}
+        </div>
+    )
+}
+
+export function Avatar({ name = '?', size = 34 }) {
+    const initials = name
+        .split(' ')
+        .map((p) => p[0])
+        .filter(Boolean)
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
+    return <span className="avatar" style={{ width: size, height: size, fontSize: size * 0.36 }}>{initials}</span>
+}
+
+export function Tabs({ tabs, value, onChange, className = '' }) {
+    return (
+        <div className={`tabs ${className}`} role="tablist">
+        {tabs.map((t) => (
+            <button
+            key={t.value}
+            type="button"
+            role="tab"
+            aria-selected={value === t.value}
+            className={`tab${value === t.value ? ' on' : ''}`}
+            onClick={() => onChange(t.value)}
+            >
+            {t.label}
+            {t.count != null && <span className="tab-count">{t.count}</span>}
+            </button>
+        ))}
         </div>
     )
 }

@@ -1,8 +1,15 @@
 import { useEffect } from 'react'
 
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useApp } from './store/AppStore.jsx'
+import { AppLayout, ROLE_HOME, RequireRole } from './components/Layout.jsx'
+import { SignIn } from './pages/auth/SignIn.jsx'
+import { SignUp } from './pages/auth/SignUp.jsx'
+import { ResetPassword } from './pages/auth/ResetPassword.jsx'
 import { MachineBoard } from './pages/student/MachineBoard.jsx'
 import { MyBookings } from './pages/student/MyBookings.jsx'
+import { Button } from './components/ui.jsx'
+import { Logo } from './components/Icons.jsx'
 
 
 function PublicOnly({ children }) {
@@ -45,11 +52,13 @@ export function App() {
           <Route index element={<Navigate to="board" replace />} />
           <Route path="board" element={<MachineBoard />} />
           <Route path="bookings" element={<MyBookings />} />
+          {/* 
           <Route path="queue" element={<QueuePage />} />
           <Route path="checkin" element={<CheckIn />} />
           <Route path="report" element={<ReportProblem />} />
           <Route path="history" element={<History />} />
-          <Route path="settings" element={<NotificationSettings />} />
+          <Route path="settings" element={<NotificationSettings />} /> 
+          
         </Route>
 
         <Route path="/staff" element={<RequireRole role="staff"><AppLayout /></RequireRole>}>
@@ -70,6 +79,7 @@ export function App() {
           <Route path="rules" element={<AdminRules />} />
           <Route path="stats" element={<AdminStats />} />
           <Route path="reports" element={<AdminReports />} />
+        */}
         </Route>
 
         <Route path="*" element={<NotFound />} />
