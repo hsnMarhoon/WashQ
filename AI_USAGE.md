@@ -23,6 +23,10 @@ This file lists the AI tools used in the code phases of the project, as required
 <!-- Mazen, Hassan, Usman: add one row per AI conversation (C02, C03, ...), or add your name to the line below if you used no AI in this phase. -->
 >>>>>>> 1653253 (Connect staff workflows to shared state)
 
+| C08 | Hassan Almarhoon | Claude (Sonnet 5.5) | Troubleshooting a `react-router-dom` dependency error; Claude advised installing the package separately and gave troubleshooting steps | `package.json` |
+| C09 | Hassan Almarhoon | Claude (Sonnet 5.5) | Generating an inline SVG icon set (`ICONS` object) for the existing `Icon` component, based on the project's list of icon names | `src/components/Icons.jsx` |
+| C10 | Hassan Almarhoon | Claude (Sonnet 5.5) | Preparing the project stylesheet from a supplied reference file, matching it as closely as possible | `src/styles.css` |
+
 No AI used: _to be completed by each member before submission._
 
 ---
